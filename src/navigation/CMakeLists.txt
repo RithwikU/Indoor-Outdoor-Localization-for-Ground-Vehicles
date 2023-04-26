@@ -8,11 +8,12 @@ project(navigation)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  geometry_msgs
   roscpp
   rospy
   sensor_msgs
   std_msgs
+  nav_msgs
+  geometry_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -70,7 +71,7 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
+#generate_messages(
 #   DEPENDENCIES
 #   geometry_msgs#   sensor_msgs#   std_msgs
 # )
@@ -121,6 +122,10 @@ include_directories(
 # include
   ${catkin_INCLUDE_DIRS}
 )
+
+add_executable(twist_pub src/twist_pub.cpp)
+target_link_libraries(twist_pub ${catkin_LIBRARIES})
+#add_dependencies(twist_pub std_msgs)
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
