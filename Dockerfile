@@ -26,6 +26,11 @@ RUN apt-get install ros-melodic-roslint -y
 RUN apt-get install ros-melodic-xacro -y
 RUN apt-get install ros-melodic-robot-state-publisher -y
 
+# networking
+RUN apt-get install net-tools -y
+RUN apt-get install iputils-ping -y
+RUN apt-get install nmap -y
+
 # serial
 RUN pip3 install pyserial
 
