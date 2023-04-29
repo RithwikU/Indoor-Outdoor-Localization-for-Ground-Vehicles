@@ -61,7 +61,7 @@ def process_data(fix_pub):
         msg.latitude = lat
         msg.longitude = lon
         
-        msg.altitude = float(split[9]) if (msg.altitude) else 0.0
+        msg.altitude = float(split[9]) if ( msg.altitude) else 0.0
         msg.status.status = int(fix)
         msg.status.service = 1
         msg.position_covariance_type = 0
