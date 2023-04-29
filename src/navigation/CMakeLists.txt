@@ -15,6 +15,9 @@ find_package(catkin REQUIRED COMPONENTS
   nav_msgs
   geometry_msgs
 )
+find_package(Eigen3 REQUIRED)
+include_directories(include ${EIGEN3_INCLUDE_DIR})
+find_package(GTSAM REQUIRED)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -120,7 +123,9 @@ catkin_package(
 ## Your package locations should be listed before other locations
 include_directories(
 # include
+  src
   ${catkin_INCLUDE_DIRS}
+  ${GTSAM_INCLUDE_DIRECTORIES}
 )
 
 add_executable(twist_pub src/twist_pub.cpp)
@@ -128,7 +133,7 @@ add_executable(gtsam_template src/gtsam_template.cpp)
 add_executable(odometry_example_node src/odometry_example_node.cpp)
 target_link_libraries(twist_pub ${catkin_LIBRARIES})
 target_link_libraries(gtsam_template ${catkin_LIBRARIES})
-target_link_libraries(odometry_example_node ${catkin_LIBRARIES})
+target_link_libraries(odometry_example_node ${catkin_LIBRARIES} gtsam)
 #add_dependencies(twist_pub std_msgs)
 
 ## Declare a C++ library

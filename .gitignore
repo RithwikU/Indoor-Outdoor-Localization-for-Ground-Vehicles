@@ -4,3 +4,4 @@ build/
 log/    
 src/velodyne
 GTSAM/
+gtsam/
