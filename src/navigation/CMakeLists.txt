@@ -124,7 +124,11 @@ include_directories(
 )
 
 add_executable(twist_pub src/twist_pub.cpp)
+add_executable(gtsam_template src/gtsam_template.cpp)
+add_executable(odometry_example_node src/odometry_example_node.cpp)
 target_link_libraries(twist_pub ${catkin_LIBRARIES})
+target_link_libraries(gtsam_template ${catkin_LIBRARIES})
+target_link_libraries(odometry_example_node ${catkin_LIBRARIES})
 #add_dependencies(twist_pub std_msgs)
 
 ## Declare a C++ library
