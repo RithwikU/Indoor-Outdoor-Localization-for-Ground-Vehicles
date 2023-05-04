@@ -201,13 +201,13 @@ if(NOT MSVC)
 
   option(EIGEN_TEST_SSE2 "Enable/Disable SSE2 in tests/examples" OFF)
   if(EIGEN_TEST_SSE2)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse2")
+    # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse2")
     message(STATUS "Enabling SSE2 in tests/examples")
   endif()
 
   option(EIGEN_TEST_SSE3 "Enable/Disable SSE3 in tests/examples" OFF)
   if(EIGEN_TEST_SSE3)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse3")
+    # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse3")
     message(STATUS "Enabling SSE3 in tests/examples")
   endif()
 
@@ -219,13 +219,13 @@ if(NOT MSVC)
 
   option(EIGEN_TEST_SSE4_1 "Enable/Disable SSE4.1 in tests/examples" OFF)
   if(EIGEN_TEST_SSE4_1)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse4.1")
+    # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse4.1")
     message(STATUS "Enabling SSE4.1 in tests/examples")
   endif()
 
   option(EIGEN_TEST_SSE4_2 "Enable/Disable SSE4.2 in tests/examples" OFF)
   if(EIGEN_TEST_SSE4_2)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse4.2")
+    # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse4.2")
     message(STATUS "Enabling SSE4.2 in tests/examples")
   endif()
 
