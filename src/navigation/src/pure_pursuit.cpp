@@ -1,31 +1,13 @@
-
 #include "navigation/pure_pursuit.h"
 
-PurePursuit::PurePursuit()
-{ 
-    // Initialize ROS publisher
-    twist_pub_ = n_.advertise<geometry_msgs::Twist>("/cmd_vel", 10);
-    vis_waypoint_pub_ = n_.advertise<visualization_msgs::MarkerArray>("/waypoints", 10);
-
-    // Initialize ROS subscriber to recieve odometry message
-    pose_sub_ = n_.subscribe("/odom", 10, &PurePursuit::pose_callback, this);
-
-    // ROS timer callback
-    timer_ = n_.createTimer(ros::Duration(0.1), &PurePursuit::timer_callback, this);
-
-    // Initialize waypoints
-    // TODO :: load waypoints  
-
-    idx_current_ = 0;
-}
-
-void PurePursuit::csv_to_waypoints()
+void csv_to_waypoints()
 {
-    std::string relative_path = "/home/indro/ESE650/src/navigation/waypoints";
-    std::string fname = "waypoints.csv";
+    std::string relative_path = "/home/indro/ESE650/src/navigation/waypoints/waypoints_big.csv";
+    // std::string fname = "waypoints.csv";
     
     std::string line, s;
-    std::ifstream file(relative_path + fname);
+    std::ifstream file(relative_path);
+    std::cout << "File open: " << file.is_open() << std::endl;
     // file.open("waypoints_drive.csv");
 
     visualization_msgs::Marker marker;
@@ -59,11 +41,15 @@ void PurePursuit::csv_to_waypoints()
             marker.type = visualization_msgs::Marker::SPHERE;
             marker.pose.position.x = p.x;
             marker.pose.position.y = p.y;
+            marker.pose.orientation.x = 0;
+            marker.pose.orientation.y = 0;
+            marker.pose.orientation.z = 0;
+            marker.pose.orientation.w = 1;
             marker.id = marker_id++;
-            marker.scale.x = 0.15;
-            marker.scale.y = 0.15;
-            marker.scale.z = 0.15;
-            marker.color.a = 0.5;
+            marker.scale.x = marker_size;
+            marker.scale.y = marker_size;
+            marker.scale.z = marker_size;
+            marker.color.a = 1.0;
             marker.color.r = 0.0;
             marker.color.g = 0.0;
             marker.color.b = 1.0;
@@ -75,24 +61,16 @@ void PurePursuit::csv_to_waypoints()
         }
         file.close();
     }
+        vis_waypoint_pub_.publish(marker_array_);
 }
 
+void pose_callback(const nav_msgs::Odometry::ConstPtr& odom_msg){
 
-void PurePursuit::timer_callback(const ros::TimerEvent& event)
-{
-    // Publish visualization markers
-    vis_waypoint_pub_.publish(marker_array_);
-}
-
-
-void PurePursuit::pose_callback(const nav_msgs::Odometry::ConstPtr& odom_msg)
-{
-    // update car transform
 
     tf::Quaternion orientation;
     tf::quaternionMsgToTF(odom_msg->pose.pose.orientation, orientation);
     tf::Vector3 translation(odom_msg->pose.pose.position.x, odom_msg->pose.pose.position.y, 0.0);
-    tf::Transform transform_map_to_ego = tf::Transform(orientation, translation).inverse();
+    transform_ego_T_map_ = tf::Transform(orientation, translation).inverse();
 
 
     // Identify closest waypoint,
@@ -101,7 +79,6 @@ void PurePursuit::pose_callback(const nav_msgs::Odometry::ConstPtr& odom_msg)
 
     // Find Projection
     double steering = calculate_steering(tracking_point);
-    std::cout << "Steering angle: " << steering << std::endl;
 
     // Publish twist message
     geometry_msgs::Twist twist_msg;
@@ -118,7 +95,7 @@ void PurePursuit::pose_callback(const nav_msgs::Odometry::ConstPtr& odom_msg)
 }
 
 
-// Waypoint PurePursuit::find_tracking_point(geometry_msgs::Pose::ConstPtr& pose)
+// Waypoint find_tracking_point(geometry_msgs::Pose::ConstPtr& pose)
 // {
 //     // Find tracking point
 //     for (int i = 0; i < waypoints_.size(); i++)
@@ -138,9 +115,15 @@ void PurePursuit::pose_callback(const nav_msgs::Odometry::ConstPtr& odom_msg)
 // }
 
 
-void PurePursuit::update_tracking_waypoint(){
+void update_tracking_waypoint(){
     Waypoint curr = waypoints_.at(idx_current_);
+    // std::cout << "waypoint x: " <<  curr.x << std::endl;
+    // std::cout << "waypoint y: " <<  curr.y << std::endl;
     curr = transformToEgoFrame(curr);
+    // std::cout << "waypoint x: " <<  curr.x << std::endl;
+    // std::cout << "waypoint y: " <<  curr.y << std::endl;
+    std::cout << "Current index: " << idx_current_ << std::endl;
+
     if(curr.x*curr.x + curr.y*curr.y < l_*l_){
         std::cout << "Reached waypoint number : " << idx_current_ << std::endl;
         idx_current_++;
@@ -152,7 +135,7 @@ void PurePursuit::update_tracking_waypoint(){
 }
 
 
-Waypoint PurePursuit::transformToEgoFrame(Waypoint wpt)
+Waypoint transformToEgoFrame(Waypoint wpt)
 {
     tf::Vector3 pt(wpt.x, wpt.y, 0.0);
 
@@ -170,17 +153,19 @@ Waypoint PurePursuit::transformToEgoFrame(Waypoint wpt)
 }
 
 
-double PurePursuit::calculate_steering(Waypoint wp){
+double calculate_steering(Waypoint wp){
  
     // Transform these points to the ego frame
     Waypoint tracking = transformToEgoFrame(wp);
 
     float dist = sqrt(pow(tracking.x, 2) + pow(tracking.y, 2));
-    tracking.x = this->l_ * tracking.x / dist;
-    tracking.y = this->l_ * tracking.y / dist;
+    tracking.x = l_ * tracking.x / dist;
+    tracking.y = l_ * tracking.y / dist;
 
     double curvature = (2*abs(tracking.y))/pow(l_, 2);
     double steering_angle = steering_gain_ * curvature;
+
+    // std::cout << "Steering angle: " << steering_angle << std::endl;
     
     if(tracking.y < 0)
         steering_angle = -steering_angle;
@@ -192,9 +177,28 @@ double PurePursuit::calculate_steering(Waypoint wp){
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "pure_pursuit_node");
+    ros::NodeHandle n_;
+
+
+    twist_pub_ = n_.advertise<geometry_msgs::Twist>("/cmd_vel", 10);
+    vis_waypoint_pub_ = n_.advertise<visualization_msgs::MarkerArray>("/waypoints", 10);
+
+    // Initialize ROS subscriber to recieve odometry message
+    pose_sub_ = n_.subscribe("/slam_odom", 10, pose_callback);
+
+    csv_to_waypoints();
+
+    // create a timer that calls the 'timerCallback' function every second
+    ros::Timer timer = n_.createTimer(ros::Duration(5.0), [&](const ros::TimerEvent& event) {
+    // publish the message
+        // std::cout<<"Displaying waypointd " << std::endl;
+        vis_waypoint_pub_.publish(marker_array_);
+    });
+
+    // ros::Time time = ros::Time::now();
+    std::cout << "Starting node" << std::endl;
     ros::Rate loop_rate(10);
 
-    PurePursuit pure_pursuit;
     while (ros::ok())
     {
         ros::spinOnce();

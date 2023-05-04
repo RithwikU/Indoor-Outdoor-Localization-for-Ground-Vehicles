@@ -26,40 +26,33 @@ struct Waypoint
     double y;
 };
 
-class PurePursuit
-{
-public:
-    PurePursuit();
-    ~PurePursuit() {}
 
+ros::Publisher twist_pub_;
+ros::Publisher vis_waypoint_pub_;
+ros::Subscriber pose_sub_;
+tf::Transform transform_ego_T_map_;
 
-    ros::NodeHandle n_;
-    ros::Timer timer_;
-    ros::Publisher twist_pub_;
-    ros::Publisher vis_waypoint_pub_;
-    ros::Subscriber pose_sub_;
-    tf::Transform transform_ego_T_map_;
+double l_ = 2.0;  // Look ahead
+double steering_gain_ = 1.2;
+double speed_ = 0.69;
+double marker_size = 1.0;
 
-    double l_;  // Look ahead
-    double steering_gain_;
-    double speed_ = 0.5;
+int idx_current_ = 0;
 
-    int idx_current_;
+visualization_msgs::MarkerArray marker_array_;
 
-    visualization_msgs::MarkerArray marker_array_;
+std::vector<Waypoint> waypoints_;
 
-    std::vector<Waypoint> waypoints_;
+Waypoint find_tracking_point(geometry_msgs::Pose::ConstPtr& pose);
+Waypoint transformToEgoFrame(Waypoint wpt);
 
-    Waypoint find_tracking_point(geometry_msgs::Pose::ConstPtr& pose);
-    Waypoint transformToEgoFrame(Waypoint wpt);
+void csv_to_waypoints();
+// void timer_callback(const ros::TimerEvent& event);
 
-    void csv_to_waypoints();
-    void timer_callback(const ros::TimerEvent& event);
+void pose_callback(const nav_msgs::Odometry::ConstPtr& odom_msg);
 
-    void pose_callback(const nav_msgs::Odometry::ConstPtr& odom_msg);
+double calculate_steering(Waypoint wp);
+void update_tracking_waypoint();
 
-    double calculate_steering(Waypoint wp);
-    void update_tracking_waypoint();
-};
 
 
