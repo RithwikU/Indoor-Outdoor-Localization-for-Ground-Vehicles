@@ -9,7 +9,7 @@
 #define radians(val) (val*M_PI/180.0)
 
 ros::Publisher pose_pub;
-double base_point_gps_[2] = {39.94040066666666, -75.19988683333332};
+double base_point_gps_[2] = {39.9521881666698, -75.1912719920683};
 
 std::vector<double> get_earth_radius_at_latitude(double latitude)
 {
