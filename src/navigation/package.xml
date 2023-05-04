@@ -49,8 +49,6 @@
   <!-- Use doc_depend for packages you need only for building documentation: -->
   <!--   <doc_depend>doxygen</doc_depend> -->
   
-  <depend>gtsam</depend>
-
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>geometry_msgs</build_depend>
   <build_depend>roscpp</build_depend>
@@ -67,6 +65,10 @@
   <exec_depend>rospy</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>std_msgs</exec_depend>
+
+  <depend>visualization_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>tf</depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->

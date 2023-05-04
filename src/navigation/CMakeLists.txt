@@ -14,6 +14,8 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   nav_msgs
   geometry_msgs
+  visualization_msgs
+  tf
 )
 find_package(Eigen3 REQUIRED)
 include_directories(include ${EIGEN3_INCLUDE_DIR})
@@ -130,6 +132,10 @@ include_directories(
 
 add_executable(twist_pub src/twist_pub.cpp)
 target_link_libraries(twist_pub ${catkin_LIBRARIES})
+
+add_executable(pure_pursuit_node src/pure_pursuit.cpp)
+target_link_libraries(pure_pursuit_node ${catkin_LIBRARIES})
+
 
 # add_executable(gtsam_template src/gtsam_template.cpp)
 # target_link_libraries(gtsam_template ${catkin_LIBRARIES})

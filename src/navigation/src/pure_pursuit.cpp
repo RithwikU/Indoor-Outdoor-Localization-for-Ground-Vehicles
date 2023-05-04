@@ -4,35 +4,100 @@
 PurePursuit::PurePursuit()
 { 
     // Initialize ROS publisher
-    twist_pub_ = n.advertise<geometry_msgs::Twist>("/cmd_vel", 10);
+    twist_pub_ = n_.advertise<geometry_msgs::Twist>("/cmd_vel", 10);
+    vis_waypoint_pub_ = n_.advertise<visualization_msgs::MarkerArray>("/waypoints", 10);
 
     // Initialize ROS subscriber to recieve odometry message
-    pose_sub_ = n.subscribe("/odom", 10, &PurePursuit::pose_callback, this);
-    
+    pose_sub_ = n_.subscribe("/odom", 10, &PurePursuit::pose_callback, this);
+
+    // ROS timer callback
+    timer_ = n_.createTimer(ros::Duration(0.1), &PurePursuit::timer_callback, this);
 
     // Initialize waypoints
     // TODO :: load waypoints  
 
-    current_tracking_point_ = waypoints_.at(0);
+    idx_current_ = 0;
+}
+
+void PurePursuit::csv_to_waypoints()
+{
+    std::string relative_path = "/home/indro/ESE650/src/navigation/waypoints";
+    std::string fname = "waypoints.csv";
+    
+    std::string line, s;
+    std::ifstream file(relative_path + fname);
+    // file.open("waypoints_drive.csv");
+
+    visualization_msgs::Marker marker;
+
+    std::vector<double> line_vector;
+    
+    if(!file.is_open())
+    {
+        throw "waypoints/waypoints*.csv file failed to open, check relative path";
+    }
+    else
+    {
+        int marker_id = 1;
+        while(getline(file, line))
+        {
+            Waypoint p;
+
+            std::stringstream ss(line);
+
+            while(getline(ss, s, ',')) 
+            {
+                // store token string in the vector
+                line_vector.push_back(stod(s));
+            }
+
+            p.x = line_vector[0]; // str to double
+            p.y = line_vector[1]; // str to double
+
+            waypoints_.push_back(p);        
+
+            marker.type = visualization_msgs::Marker::SPHERE;
+            marker.pose.position.x = p.x;
+            marker.pose.position.y = p.y;
+            marker.id = marker_id++;
+            marker.scale.x = 0.15;
+            marker.scale.y = 0.15;
+            marker.scale.z = 0.15;
+            marker.color.a = 0.5;
+            marker.color.r = 0.0;
+            marker.color.g = 0.0;
+            marker.color.b = 1.0;
+            marker.header.frame_id = "map";
+
+            marker_array_.markers.push_back(marker);
+
+            line_vector.clear();
+        }
+        file.close();
+    }
 }
 
 
+void PurePursuit::timer_callback(const ros::TimerEvent& event)
+{
+    // Publish visualization markers
+    vis_waypoint_pub_.publish(marker_array_);
+}
 
-void PurePursuit::pose_callback(const geometry_msgs::PoseStamped::ConstPtr& msg)
+
+void PurePursuit::pose_callback(const nav_msgs::Odometry::ConstPtr& odom_msg)
 {
     // update car transform
 
     tf::Quaternion orientation;
-    tf::quaternionMsgToTF(pose_msg->pose.orientation, orientation);
-    tf::Vector3 translation(pose_msg->pose.position.x, pose_msg->pose.position.y, 0.0);
+    tf::quaternionMsgToTF(odom_msg->pose.pose.orientation, orientation);
+    tf::Vector3 translation(odom_msg->pose.pose.position.x, odom_msg->pose.pose.position.y, 0.0);
     tf::Transform transform_map_to_ego = tf::Transform(orientation, translation).inverse();
 
 
     // Identify closest waypoint,
     update_tracking_waypoint();
     Waypoint tracking_point = waypoints_.at(idx_current_);
-
-
 
     // Find Projection
     double steering = calculate_steering(tracking_point);
@@ -47,29 +112,30 @@ void PurePursuit::pose_callback(const geometry_msgs::PoseStamped::ConstPtr& msg)
     twist_msg.angular.x = 0.0;
     twist_msg.angular.y = 0.0;
     twist_msg.angular.z = steering;
-    
+
+    twist_pub_.publish(twist_msg); 
 
 }
 
 
-Waypoint PurePursuit::find_tracking_point(geometry_msgs::Pose::ConstPtr& pose)
-{
-    // Find tracking point
-    for (int i = 0; i < waypoints_.size(); i++)
-    {
-        double distance = sqrt(pow(pose->position.x - waypoints_.at(i).x, 2) + pow(pose->position.y - waypoints_.at(i).y, 2));
-        double min_dist = __DBL_MAX__;
-        Waypoint tracking_point;
-        if (distance < min_dist && distance > l_ && !waypoints_.at(i).has_visited)
-        {
-            min_dist = distance;
-            tracking_point = waypoints_.at(i);
-        }
+// Waypoint PurePursuit::find_tracking_point(geometry_msgs::Pose::ConstPtr& pose)
+// {
+//     // Find tracking point
+//     for (int i = 0; i < waypoints_.size(); i++)
+//     {
+//         double distance = sqrt(pow(pose->position.x - waypoints_.at(i).x, 2) + pow(pose->position.y - waypoints_.at(i).y, 2));
+//         double min_dist = __DBL_MAX__;
+//         Waypoint tracking_point;
+//         if (distance < min_dist && distance > l_ && !waypoints_.at(i).has_visited)
+//         {
+//             min_dist = distance;
+//             tracking_point = waypoints_.at(i);
+//         }
         
-    }
+//     }
 
-    return tracking_point;
-}
+//     return tracking_point;
+// }
 
 
 void PurePursuit::update_tracking_waypoint(){
@@ -80,7 +146,7 @@ void PurePursuit::update_tracking_waypoint(){
         idx_current_++;
         if(idx_current_ == waypoints_.size()){
             std::cout << "Reached final waypoint" << std::endl;
-            velocity_ = 0;
+            speed_ = 0.0;
         }
     }
 }
@@ -104,7 +170,7 @@ Waypoint PurePursuit::transformToEgoFrame(Waypoint wpt)
 }
 
 
-void PurePursuit::calculate_steering(Waypoint wp){
+double PurePursuit::calculate_steering(Waypoint wp){
  
     // Transform these points to the ego frame
     Waypoint tracking = transformToEgoFrame(wp);
@@ -116,7 +182,7 @@ void PurePursuit::calculate_steering(Waypoint wp){
     double curvature = (2*abs(tracking.y))/pow(l_, 2);
     double steering_angle = steering_gain_ * curvature;
     
-    if(tracking_waypoint_.y < 0)
+    if(tracking.y < 0)
         steering_angle = -steering_angle;
 
     return steering_angle;  

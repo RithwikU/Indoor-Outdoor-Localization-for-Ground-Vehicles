@@ -1,10 +1,19 @@
 #include <string>
 #include <cmath>
 #include <vector>
+#include <sstream>
+#include <iostream>
+#include <fstream>
+
 #include "ros/ros.h"
 #include "geometry_msgs/Twist.h"
 #include <tf/transform_datatypes.h>
 #include <tf/transform_broadcaster.h>
+#include <visualization_msgs/Marker.h>
+#include <visualization_msgs/MarkerArray.h>
+#include "nav_msgs/Odometry.h"
+#include "geometry_msgs/Pose.h"
+
 
 
 struct Waypoint
@@ -13,14 +22,11 @@ struct Waypoint
         : Waypoint(0.0, 0.0) {}
     Waypoint(double x, double y)
         : x(x), y(y) {}
-    Waypoint(std::vector<double> v)
-        : x(v.at(0)), y(v.at(1)) {}
     double x;
     double y;
-    bool has_visited;
 };
 
-class PurePursuit : public rclcpp::Node
+class PurePursuit
 {
 public:
     PurePursuit();
@@ -28,9 +34,11 @@ public:
 
 
     ros::NodeHandle n_;
+    ros::Timer timer_;
     ros::Publisher twist_pub_;
+    ros::Publisher vis_waypoint_pub_;
     ros::Subscriber pose_sub_;
-    tf::Transform transform_ego_T_map_
+    tf::Transform transform_ego_T_map_;
 
     double l_;  // Look ahead
     double steering_gain_;
@@ -38,12 +46,19 @@ public:
 
     int idx_current_;
 
+    visualization_msgs::MarkerArray marker_array_;
+
     std::vector<Waypoint> waypoints_;
 
     Waypoint find_tracking_point(geometry_msgs::Pose::ConstPtr& pose);
-    Waypoint transformToEgoFrame(Waypoint &wpt);
+    Waypoint transformToEgoFrame(Waypoint wpt);
 
-    void calculate_steering(Waypoint wp);
+    void csv_to_waypoints();
+    void timer_callback(const ros::TimerEvent& event);
+
+    void pose_callback(const nav_msgs::Odometry::ConstPtr& odom_msg);
+
+    double calculate_steering(Waypoint wp);
     void update_tracking_waypoint();
 };
 
