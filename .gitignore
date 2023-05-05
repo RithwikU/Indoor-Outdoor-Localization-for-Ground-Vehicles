@@ -5,3 +5,4 @@ log/
 src/velodyne
 GTSAM/
 gtsam/
+*.bag

@@ -2,7 +2,7 @@
 
 void csv_to_waypoints()
 {
-    std::string relative_path = "/home/indro/ESE650/src/navigation/waypoints/waypoints_big.csv";
+    std::string relative_path = "/home/indro/ESE650/src/navigation/waypoints/waypoints_direct.csv";
     // std::string fname = "waypoints.csv";
     
     std::string line, s;
