@@ -52,19 +52,22 @@ void gnss_callback(const sensor_msgs::NavSatFix::ConstPtr& msg)
 {
     // ROS_INFO("Lat: [%s]", msg->latitude.c_str());
     // ROS_INFO("Lon: [%s]", msg->longitude.c_str());
-    std::vector<double> cartesian_xy = gnss_to_cartesian(msg->latitude, msg->longitude);
-    geometry_msgs::PoseStamped cartesian_pose;
-    cartesian_pose.header.stamp = ros::Time::now();
-    cartesian_pose.pose.position.x = cartesian_xy[0];
-    cartesian_pose.pose.position.y = cartesian_xy[1];
-    cartesian_pose.pose.position.z = msg->altitude;
-    cartesian_pose.pose.orientation.x = 0;
-    cartesian_pose.pose.orientation.y = 0;
-    cartesian_pose.pose.orientation.z = 0;
-    cartesian_pose.pose.orientation.w = 1;
-    // ROS_INFO("x: [%s]", cartesian_pose.pose.position.x.c_str());
-    // ROS_INFO("y: [%s]", cartesian_pose.pose.position.y.c_str());
-    pose_pub.publish(cartesian_pose);
+    if(msg->latitude != 0.0 && msg->longitude != 0.0)
+    {
+        std::vector<double> cartesian_xy = gnss_to_cartesian(msg->latitude, msg->longitude);
+        geometry_msgs::PoseStamped cartesian_pose;
+        cartesian_pose.header.stamp = ros::Time::now();
+        cartesian_pose.pose.position.x = cartesian_xy[0];
+        cartesian_pose.pose.position.y = cartesian_xy[1];
+        cartesian_pose.pose.position.z = msg->altitude;
+        cartesian_pose.pose.orientation.x = 0;
+        cartesian_pose.pose.orientation.y = 0;
+        cartesian_pose.pose.orientation.z = 0;
+        cartesian_pose.pose.orientation.w = 1;
+        // ROS_INFO("x: [%s]", cartesian_pose.pose.position.x.c_str());
+        // ROS_INFO("y: [%s]", cartesian_pose.pose.position.y.c_str());
+        pose_pub.publish(cartesian_pose);
+    }
 }
 
 
