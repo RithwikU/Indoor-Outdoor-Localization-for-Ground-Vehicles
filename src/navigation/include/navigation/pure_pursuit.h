@@ -33,8 +33,8 @@ ros::Subscriber pose_sub_;
 tf::Transform transform_ego_T_map_;
 
 double l_ = 2.0;  // Look ahead
-double steering_gain_ = 1.2;
-double speed_ = 0.69;
+double steering_gain_ = 1.0;
+double speed_ = 0.5;
 double marker_size = 1.0;
 
 int idx_current_ = 0;
