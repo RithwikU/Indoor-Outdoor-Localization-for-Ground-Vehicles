@@ -3,79 +3,113 @@
 import matplotlib.pyplot as plt
 import csv
 
-x = []
-y = []
+# File names
+trial = "1";
+filtered_file = "gtsam_filtered_" + trial;
+smoothed_file = "gtsam_smoothed_" + trial;
+gt_file = "spline_ground_truth";
+lidar_file = "spline_lidar_mixed";
+odom_file = "spline_odom_drift";
+gps_file = "spline_gps";
 
-path = "/home/aadith/Desktop/ESE-650/ESE650-Final-Project/src/navigation/gtsam_results/result1.csv";
 
-with open(path, 'r') as csvfile:
+# Smoothed results data
+x_smoothed = []
+y_smoothed = []
+
+path_smoothed = "/home/aadith/Desktop/ESE-650/ESE650-Final-Project/src/navigation/gtsam_results/" + smoothed_file + ".csv";
+
+with open(path_smoothed, 'r') as csvfile:
     reader = csv.reader(csvfile, delimiter=',')
 
     for row in reader:
-        x.append(float(row[0]))
-        y.append(float(row[1]))
+        x_smoothed.append(float(row[0]))
+        y_smoothed.append(float(row[1]))
 
 
 
-#Load data from other csv file and plot on same graph
-x1 = []
-y1 = []
+# Filtered results data
+x_filtered = []
+y_filtered = []
+path_filtered = "/home/aadith/Desktop/ESE-650/ESE650-Final-Project/src/navigation/gtsam_results/" + filtered_file + ".csv";
 
-path1 = "/home/aadith/Desktop/ESE-650/ESE650-Final-Project/src/navigation/waypoints/spline_ground_truth.csv";
-with open(path1, 'r') as csvfile:
+with open(path_filtered, 'r') as csvfile:
     reader = csv.reader(csvfile, delimiter=',')
 
     for row in reader:
-        x1.append(float(row[0]))
-        y1.append(float(row[1]))
+        x_filtered.append(float(row[0]))
+        y_filtered.append(float(row[1]))
 
 
-#Load data from other csv file and plot on same graph
-x2 = []
-y2 = []
 
-path2 = "/home/aadith/Desktop/ESE-650/ESE650-Final-Project/src/navigation/waypoints/spline_lidar_inside.csv";
+# ground truth results data
+x_gt = []
+y_gt = []
 
-with open(path2, 'r') as csvfile:
+path_gt = "/home/aadith/Desktop/ESE-650/ESE650-Final-Project/src/navigation/waypoints/" + gt_file + ".csv";
+with open(path_gt, 'r') as csvfile:
     reader = csv.reader(csvfile, delimiter=',')
 
     for row in reader:
-        x2.append(float(row[0]))
-        y2.append(float(row[1]))
+        x_gt.append(float(row[0]))
+        y_gt.append(float(row[1]))
 
 
-#Load data from other csv file and plot on same graph
-x3 = []
-y3 = []
 
-path3 = "/home/aadith/Desktop/ESE-650/ESE650-Final-Project/src/navigation/waypoints/spline_odom_drift.csv";
+# Lidar Data
+x_lidar = []
+y_lidar = []
 
-with open(path3, 'r') as csvfile:
+path_lidar = "/home/aadith/Desktop/ESE-650/ESE650-Final-Project/src/navigation/waypoints/" + lidar_file + ".csv";
+
+with open(path_lidar, 'r') as csvfile:
     reader = csv.reader(csvfile, delimiter=',')
 
     for row in reader:
-        x3.append(float(row[0]))
-        y3.append(float(row[1]))
-
-path4 = "/home/aadith/Desktop/ESE-650/ESE650-Final-Project/src/navigation/waypoints/spline_gps.csv";
+        x_lidar.append(float(row[0]))
+        y_lidar.append(float(row[1]))
 
 
-#Load data from other csv file and plot on same graph
-x4 = []
-y4 = []
-with open(path4, 'r') as csvfile:
+# odometry data
+x_odom = []
+y_odom = []
+
+path_odom = "/home/aadith/Desktop/ESE-650/ESE650-Final-Project/src/navigation/waypoints/" + odom_file + ".csv";
+with open(path_odom, 'r') as csvfile:
     reader = csv.reader(csvfile, delimiter=',')
 
     for row in reader:
-        x4.append(float(row[0]))
-        y4.append(float(row[1]))
+        x_odom.append(float(row[0]))
+        y_odom.append(float(row[1]))
+
+
+
+# gps data
+path_gps = "/home/aadith/Desktop/ESE-650/ESE650-Final-Project/src/navigation/waypoints/" + gps_file + ".csv";
+x_gps = []
+y_gps = []
+count = 0;
+with open(path_gps, 'r') as csvfile:
+    reader = csv.reader(csvfile, delimiter=',')
+    for row in reader:
+        count = count + 1;
+        if count > 15 and count < 23:
+            x_gps.append(float(row[0]))
+            y_gps.append(float(row[1]))
+
+
+
 
 #Plot all these in one graph
-plt.plot(x, y, 'r-x', label='gtsam result')
-plt.plot(x1, y1, 'b--x', alpha=0.5, label='ground truth')
-plt.plot(x2, y2, 'g--x', alpha=0.5, label='lidar')
-plt.plot(x3, y3, 'y--x', alpha=0.5, label='odom')
-plt.plot(x4, y4, 'm--x', alpha=0.5, label='gps')
+plt.plot(x_filtered, y_filtered, 'r-x',alpha=0.5, label='filtered estimate')
+plt.plot(x_smoothed, y_smoothed, 'g-x', alpha=0.5, label='smoothed estimate')
+plt.plot(x_odom, y_odom, 'y--x', alpha=0.5, label='odometery from robot')
+plt.plot(x_gps, y_gps, 'm--x', alpha=0.5, label='gps localization')
+plt.plot(x_gt, y_gt, 'b-x', alpha=0.5, label='ground truth')
+plt.plot(x_lidar, y_lidar, 'k--x', alpha=0.5, label='lidar localization')
+plt.xlabel('x location (m)')
+plt.ylabel('y location (m)')
+plt.title('Raw sensor estimates vs smoothed results')
 
 plt.legend()
 plt.show()
