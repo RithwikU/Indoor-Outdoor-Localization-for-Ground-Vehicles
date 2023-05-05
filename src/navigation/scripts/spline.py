@@ -25,10 +25,15 @@ y_spline = InterpolatedUnivariateSpline(axes, y)
 # Sample the interpolated waypoints
 number_of_samples = 50
 axes_sampled = np.linspace(1, len(x), number_of_samples)
-noise_sd = 1.0 # Standard deviation of the noise added to the spline
+noise_sd = 0.05 # Standard deviation of the noise added to the spline
 
-x_sampled = x_spline(axes_sampled) + np.random.normal(0, noise_sd, number_of_samples)
-y_sampled = y_spline(axes_sampled) + np.random.normal(0, noise_sd, number_of_samples)
+drift_x = np.zeros(number_of_samples)
+drift_y = np.zeros(number_of_samples)
+drift_x[25:35] = 1.0 # Add a drift to the spline for some samples in the x direction
+# drift_y[25:35] = 1.0 # Add a drift to the spline for some samples in the y direction
+
+x_sampled = x_spline(axes_sampled) + np.random.normal(0, noise_sd, number_of_samples) + drift_x
+y_sampled = y_spline(axes_sampled) + np.random.normal(0, noise_sd, number_of_samples) + drift_y
 
 # Save the interpolated waypoints
 # with open(path+'dense_straight_only.csv', 'w') as csvfile:
