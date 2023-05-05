@@ -64,9 +64,13 @@ void gnss_callback(const sensor_msgs::NavSatFix::ConstPtr& msg)
         cartesian_pose.pose.orientation.y = 0;
         cartesian_pose.pose.orientation.z = 0;
         cartesian_pose.pose.orientation.w = 1;
-        // ROS_INFO("x: [%s]", cartesian_pose.pose.position.x.c_str());
-        // ROS_INFO("y: [%s]", cartesian_pose.pose.position.y.c_str());
+        ROS_INFO("x: %f", cartesian_pose.pose.position.x);
+        ROS_INFO("y: %f", cartesian_pose.pose.position.y);
         pose_pub.publish(cartesian_pose);
+    }
+    else
+    {
+        ROS_INFO("No GPS data");
     }
 }
 
