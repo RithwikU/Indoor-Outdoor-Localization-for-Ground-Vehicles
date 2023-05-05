@@ -52,16 +52,14 @@ void run_inference(){
 
 void run_our_example(){
     
-
-
     std::string waypoints_path = "/home/aadith/Desktop/ESE-650/ESE650-Final-Project/src/navigation/waypoints/";
     std::string results_path = "/home/aadith/Desktop/ESE-650/ESE650-Final-Project/src/navigation/gtsam_results/";
 
-    std::string odom_file = "spline_odom_drift.csv";
-    std::string lidar_file = "spline_lidar_mixed.csv";
-    std::string gps_file = "spline_gps.csv";
+    std::string odom_file = "spline_odom_drift_b.csv";
+    std::string lidar_file = "spline_lidar_inside_b.csv";
+    std::string gps_file = "spline_gps_b.csv";
 
-    std::string trial_no = "1";
+    std::string trial_no = "2";
 
 
     std::vector<pose> gps_data = csv_to_poses(waypoints_path + gps_file);
@@ -83,7 +81,7 @@ void run_our_example(){
 
     for (int i = 2; i < gps_data.size(); i++){
         
-        if(i > 15 && i < 23){
+        if(i > 15 && i < 21){
             isLidarWorking = false;
         }
         else{
