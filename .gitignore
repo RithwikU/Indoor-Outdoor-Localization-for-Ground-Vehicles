@@ -6,3 +6,4 @@ src/velodyne
 GTSAM/
 gtsam/
 *.bag
+bags/
