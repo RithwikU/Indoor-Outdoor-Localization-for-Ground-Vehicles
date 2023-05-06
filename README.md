@@ -1,2 +1,6 @@
-# ese650-project
-Indoor-Outdoor localization using GPS and 3D LIDAR
+
+## Indoor-Outdoor localization for Ground Robots
+
+University of Pennsylvania, Spring 2023 ESE 650 - Learning in Robotics Final Project
+
+Code needs to be cleaned up and Citations need to be added
